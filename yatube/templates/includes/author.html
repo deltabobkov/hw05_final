@@ -1,0 +1,11 @@
+<ul>
+  <li>
+    Автор: {{ posts.author.get_full_name }}.
+    <a href="{% url 'posts:profile' posts.author.username %}">
+      Все посты пользователя.
+    </a>
+  </li>
+  <li>
+    Дата публикации: {{ posts.pub_date|date:"d E Y" }}
+  </li>
+</ul>
