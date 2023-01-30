@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
 from posts.models import Comment, Group, Post
 
 User = get_user_model()
@@ -47,12 +48,16 @@ class PostPagesTests(TestCase):
     def test_index_cache(self):
         """Проверка работы кеша для index"""
         response_1 = self.authorized_client.get(reverse("posts:index"))
-        Post.objects.all().delete
+        Post.objects.create(
+            author=self.user,
+            text="Для кеша",
+            group=self.group,
+        )
         response_2 = self.authorized_client.get(reverse("posts:index"))
         self.assertEqual(response_1.content, response_2.content)
         cache.clear()
         response_3 = self.authorized_client.get(reverse("posts:index"))
-        self.assertEqual(response_1.content, response_3.content)
+        self.assertNotEqual(response_1.content, response_3.content)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -367,7 +372,7 @@ class FollowViewsTests(TestCase):
             )
         )
         follow = self.authorized_client.get(reverse("posts:follow_index"))
-        first_object = follow.context["posts_num"]
+        first_object = len(follow.context["page_obj"])
         self.assertEqual(first_object, 1)
         self.authorized_client.get(
             reverse(
@@ -376,5 +381,5 @@ class FollowViewsTests(TestCase):
             )
         )
         unfollow = self.authorized_client.get(reverse("posts:follow_index"))
-        second_object = unfollow.context["posts_num"]
+        second_object = len(unfollow.context["page_obj"])
         self.assertEqual(second_object, 0)
