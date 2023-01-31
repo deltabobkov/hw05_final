@@ -39,10 +39,8 @@ def profile(request, username):
     posts = author.posts.all().select_related("group")
     posts_num = author.posts.count()
     following = (
-        request.user.is_authenticated and author.following.filter(
-            user=request.user, 
-            author=author
-        ).exists()
+        request.user.is_authenticated
+        and author.following.filter(user=request.user, author=author).exists()
     )
     paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
